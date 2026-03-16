@@ -225,7 +225,7 @@
       <div class="login-title">connec+a</div>
       <div class="login-sub" data-i18n="adminPanel">Admin Panel</div>
       <input id="pw-input" class="login-input" type="password" data-i18n-ph="passwordPlaceholder" placeholder="パスワードを入力">
-      <button class="login-btn" onclick="doLogin()" data-i18n="loginBtn">ログイン</button>
+      <button class="login-btn" id="login-btn" data-i18n="loginBtn">ログイン</button>
       <div class="login-error" id="login-error"></div>
     </div>
   </div>
@@ -416,15 +416,46 @@ async function api(action,params){
 }
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function doLogin(){
-  if(document.getElementById('pw-input').value===PASSWORD){
-    sessionStorage.setItem('admin_auth','1');
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('admin-screen').style.display='block';
-    document.getElementById('lang-sel').value=lang;
-    loadDashboard();
-  }else{document.getElementById('login-error').textContent=t('wrongPassword');}
+function doLogin() {
+  const pwInput = document.getElementById('pw-input').value;
+  const errorDiv = document.getElementById('login-error');
+  
+  errorDiv.textContent = ''; // エラーをリセット
+  
+  if (pwInput === PASSWORD) {
+    // 成功時：ログイン画面を隠して管理画面を表示
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    
+    // ログイン直後にダッシュボードのタブを表示（もし関数があれば）
+    // switchTab('dashboard'); 
+  } else {
+    // 失敗時：エラーメッセージを表示
+    errorDiv.textContent = 'パスワードが違います'; // 多言語対応する場合は I18N から取得
+  }
 }
+
+// ★ ここが重要 ★
+// HTML全体の読み込みが完了したタイミングで、ボタンにイベントを紐づける
+document.addEventListener('DOMContentLoaded', () => {
+  const loginBtn = document.getElementById('login-btn');
+  const pwInput = document.getElementById('pw-input');
+
+  // ログインボタンのクリックイベント
+  if (loginBtn) {
+    loginBtn.addEventListener('click', doLogin);
+  }
+
+  // エンターキーでのログイン対応（操作性向上のため）
+  if (pwInput) {
+    pwInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        doLogin();
+      }
+    });
+  }
+});
+
 function doLogout(){sessionStorage.removeItem('admin_auth');location.reload();}
 document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 if(sessionStorage.getItem('admin_auth')==='1'){
