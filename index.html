@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>connec+a Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@700;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --ai-deep:#1a2744;--ai-mid:#2a4a7f;--ai-soft:#4a6fa5;--ai-pale:#d4e4f7;
+      --shiro:#f8f9fc;--shiro-warm:#fdfaf5;--shiro-2:#eef2f8;--border:rgba(42,74,127,.15);
+      --haru:#f4b8cb;--natsu:#7b5ea7;--aki:#d4511a;--fuyu:#b8d4f0;--matcha:#4e7252;
+      --shadow-sm:0 2px 16px rgba(26,39,68,.08);--shadow-md:0 8px 32px rgba(26,39,68,.14);
+      --radius:14px;--radius-sm:10px;
+    }
+    html,body{height:100%;}
+    body{font-family:'Noto Sans JP',sans-serif;background:var(--shiro);color:var(--ai-deep);min-height:100vh;}
+
+    /* ログイン */
+    .login-wrap{
+      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;
+      background:var(--ai-deep);position:relative;overflow:hidden;
+    }
+    .login-wrap::before{
+      content:'';position:absolute;inset:0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 30%,rgba(244,184,203,.1) 0%,transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 70%,rgba(123,94,167,.1) 0%,transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 10%,rgba(212,81,26,.05) 0%,transparent 60%),
+        radial-gradient(ellipse 40% 40% at 30% 90%,rgba(184,212,240,.08) 0%,transparent 60%);
+    }
+    .login-wrap::after{
+      content:'';position:absolute;inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 4 L56 30 L30 56 L4 30 Z' fill='none' stroke='rgba(255,255,255,.03)' stroke-width='1'/%3E%3C/svg%3E");
+    }
+    .login-card{
+      background:rgba(255,255,255,.05);backdrop-filter:blur(24px);
+      border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);
+      padding:48px 40px;width:100%;max-width:380px;text-align:center;position:relative;z-index:1;
+    }
+    .login-logo-mark{
+      width:56px;height:56px;background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.15);border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Zen Old Mincho',serif;font-size:.85rem;color:rgba(255,255,255,.8);
+      font-weight:900;letter-spacing:-.02em;margin:0 auto 16px;
+    }
+    .login-season-bar{height:2px;border-radius:99px;overflow:hidden;margin-bottom:20px;background:linear-gradient(90deg,var(--haru),var(--natsu),var(--aki),var(--fuyu));}
+    .login-title{font-family:'Zen Old Mincho',serif;font-size:1.5rem;font-weight:900;color:#fff;margin-bottom:4px;letter-spacing:.08em;}
+    .login-sub{color:rgba(255,255,255,.35);font-size:.72rem;letter-spacing:.18em;margin-bottom:28px;text-transform:uppercase;}
+    .login-input{
+      width:100%;padding:12px 16px;background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.14);border-radius:var(--radius-sm);
+      color:#fff;font-size:.9rem;outline:none;transition:all .2s;
+      font-family:'Noto Sans JP',sans-serif;margin-bottom:12px;
+    }
+    .login-input:focus{border-color:var(--ai-pale);background:rgba(255,255,255,.11);}
+    .login-input::placeholder{color:rgba(255,255,255,.28);}
+    .login-btn{
+      width:100%;padding:13px;border-radius:99px;border:none;
+      background:linear-gradient(135deg,rgba(255,255,255,.92),#fff);
+      color:var(--ai-deep);font-weight:800;font-size:.92rem;cursor:pointer;
+      transition:all .25s;font-family:'Noto Sans JP',sans-serif;letter-spacing:.04em;
+    }
+    .login-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,255,255,.18);}
+    .login-error{color:#f4916a;font-size:.78rem;margin-top:10px;min-height:18px;}
+
+    /* ヘッダー */
+    .header{
+      position:sticky;top:0;z-index:100;background:var(--ai-deep);
+      height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;
+    }
+    .header__brand{display:flex;align-items:center;gap:10px;}
+    .header__logo{
+      width:30px;height:30px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+      border-radius:7px;display:flex;align-items:center;justify-content:center;
+      font-family:'Zen Old Mincho',serif;font-size:.6rem;color:rgba(255,255,255,.8);font-weight:900;
+    }
+    .header__title{font-family:'Zen Old Mincho',serif;font-size:.95rem;color:#fff;letter-spacing:.08em;}
+    .header__right{display:flex;align-items:center;gap:8px;}
+    .lang-sel{padding:5px 10px;border-radius:99px;font-size:.72rem;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;outline:none;font-family:'Noto Sans JP',sans-serif;}
+    .lang-sel option{background:#1a2744;color:#fff;}
+    .header__logout{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:6px 14px;border-radius:99px;cursor:pointer;font-size:.78rem;font-family:'Noto Sans JP',sans-serif;transition:all .2s;}
+    .header__logout:hover{background:rgba(255,255,255,.15);color:#fff;}
+    .season-bar{height:2px;display:flex;background:linear-gradient(90deg,var(--haru),var(--natsu),var(--aki),var(--fuyu));}
+
+    /* レイアウト */
+    .layout{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - 58px);}
+    .sidebar{background:var(--shiro-warm);border-right:1px solid var(--border);padding:16px 0;}
+    .sidebar-section{padding:16px 18px 6px;font-size:.65rem;color:var(--ai-soft);letter-spacing:.22em;font-weight:600;}
+    .sidebar-item{
+      display:block;padding:11px 18px;font-size:.875rem;color:var(--ai-soft);
+      cursor:pointer;border:none;background:none;width:100%;text-align:left;
+      border-left:2px solid transparent;transition:all .2s;font-family:'Noto Sans JP',sans-serif;
+    }
+    .sidebar-item:hover{color:var(--ai-deep);background:rgba(42,74,127,.04);}
+    .sidebar-item.active{color:var(--ai-deep);border-left-color:var(--ai-mid);background:rgba(42,74,127,.05);font-weight:600;}
+    .content{padding:32px;overflow:auto;}
+    .section-title{
+      font-family:'Zen Old Mincho',serif;font-size:1.05rem;font-weight:700;
+      color:var(--ai-deep);margin-bottom:20px;padding-bottom:12px;
+      border-bottom:2px solid var(--shiro-2);
+    }
+
+    /* 統計 */
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:28px;}
+    .stat-card{
+      background:#fff;border-radius:var(--radius-sm);border:1px solid var(--border);
+      padding:20px 16px;text-align:center;box-shadow:var(--shadow-sm);
+      transition:all .2s;position:relative;overflow:hidden;
+    }
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+    .stat-card:nth-child(1)::before{background:linear-gradient(90deg,var(--haru),#d080a0);}
+    .stat-card:nth-child(2)::before{background:linear-gradient(90deg,var(--natsu),#5a3a8a);}
+    .stat-card:nth-child(3)::before{background:linear-gradient(90deg,var(--aki),#a03010);}
+    .stat-card:nth-child(4)::before{background:linear-gradient(90deg,#4a6fa5,var(--fuyu));}
+    .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+    .stat-num{font-size:2.2rem;font-weight:800;color:var(--ai-deep);line-height:1.1;}
+    .stat-label{font-size:.72rem;color:var(--ai-soft);margin-top:6px;}
+
+    /* テーブル */
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;font-size:.82rem;}
+    th{padding:10px 14px;text-align:left;color:var(--ai-soft);font-weight:600;border-bottom:2px solid var(--shiro-2);white-space:nowrap;}
+    td{padding:11px 14px;border-bottom:1px solid var(--shiro-2);color:var(--ai-deep);}
+    tr:hover>td{background:rgba(42,74,127,.02);}
+
+    /* バッジ */
+    .badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.7rem;font-weight:700;}
+    .badge-free          {background:rgba(78,114,82,.1);color:var(--matcha);}
+    .badge-unpaid        {background:rgba(212,81,26,.1);color:var(--aki);}
+    .badge-paypay_pending{background:rgba(123,94,167,.1);color:var(--natsu);}
+    .badge-paypay_paid   {background:rgba(78,114,82,.1);color:var(--matcha);}
+    .badge-cash          {background:rgba(42,74,127,.1);color:var(--ai-mid);}
+    .badge-open          {background:rgba(78,114,82,.1);color:var(--matcha);}
+    .badge-closed        {background:var(--shiro-2);color:var(--ai-soft);}
+    .badge-checked       {background:rgba(78,114,82,.1);color:var(--matcha);}
+    .badge-not-checked   {background:var(--shiro-2);color:var(--ai-soft);}
+
+    /* ボタン */
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:9px 18px;border-radius:99px;font-size:.82rem;font-weight:700;cursor:pointer;border:none;transition:all .25s;font-family:'Noto Sans JP',sans-serif;}
+    .btn-ai{background:var(--ai-deep);color:#fff;box-shadow:0 3px 10px rgba(26,39,68,.18);}
+    .btn-ai:hover{background:var(--ai-mid);transform:translateY(-1px);}
+    .btn-matcha{background:var(--matcha);color:#fff;}
+    .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--ai-mid);}
+    .btn-outline:hover{border-color:var(--ai-mid);}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;}
+    .btn-sm{padding:5px 12px;font-size:.78rem;}
+
+    /* フォーム */
+    .form-group{margin-bottom:16px;}
+    .form-label{display:block;font-size:.78rem;font-weight:600;color:var(--ai-soft);margin-bottom:7px;letter-spacing:.04em;}
+    .form-control{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.875rem;color:var(--ai-deep);background:#fff;outline:none;transition:all .2s;font-family:'Noto Sans JP',sans-serif;}
+    .form-control:focus{border-color:var(--ai-mid);box-shadow:0 0 0 3px rgba(42,74,127,.08);}
+    select.status-sel{padding:4px 10px;border:1px solid var(--border);border-radius:6px;font-size:.75rem;color:var(--ai-mid);cursor:pointer;font-family:'Noto Sans JP',sans-serif;background:#fff;}
+
+    /* アラート */
+    .alert{padding:12px 16px;border-radius:var(--radius-sm);font-size:.82rem;margin-bottom:12px;line-height:1.7;}
+    .alert-success{background:rgba(78,114,82,.07);border-left:3px solid var(--matcha);color:var(--matcha);}
+    .alert-danger {background:rgba(212,81,26,.07);border-left:3px solid var(--aki);color:#8a2010;}
+    .alert-info   {background:rgba(42,74,127,.07);border-left:3px solid var(--ai-soft);color:var(--ai-mid);}
+
+    /* スピナー */
+    .spinner{width:32px;height:32px;border:2px solid var(--shiro-2);border-top-color:var(--ai-mid);border-radius:50%;animation:spin .8s linear infinite;margin:28px auto;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    /* QR詳細 */
+    .detail-panel{
+      background:#fff;border-radius:var(--radius);border:1.5px solid var(--ai-pale);
+      padding:24px;display:none;box-shadow:var(--shadow-sm);animation:slideIn .3s ease both;
+    }
+    .detail-panel.show{display:block;}
+    @keyframes slideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+    .detail-panel::before{
+      content:'';display:block;height:3px;margin:-24px -24px 20px;
+      background:linear-gradient(90deg,var(--haru),var(--natsu),var(--aki),var(--fuyu));
+      border-radius:var(--radius) var(--radius) 0 0;
+    }
+    .detail-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--shiro-2);}
+    .detail-avatar{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--ai-mid),var(--natsu));display:flex;align-items:center;justify-content:center;font-family:'Zen Old Mincho',serif;font-size:1.3rem;color:#fff;flex-shrink:0;}
+    .detail-name{font-size:1.1rem;font-weight:700;color:var(--ai-deep);margin-bottom:2px;}
+    .detail-rank{font-size:.75rem;color:var(--ai-soft);}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--shiro-2);}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-key{font-size:.78rem;color:var(--ai-soft);}
+    .detail-val{font-size:.85rem;font-weight:600;color:var(--ai-deep);}
+    .detail-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+
+    /* ライブ */
+    .live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(78,114,82,.08);border:1px solid rgba(78,114,82,.2);color:var(--matcha);border-radius:99px;padding:5px 14px;font-size:.72rem;font-weight:600;margin-bottom:16px;}
+    .live-dot{width:6px;height:6px;border-radius:50%;background:var(--matcha);animation:lp 1.5s infinite;}
+    @keyframes lp{0%,100%{opacity:1;}50%{opacity:.3;}}
+    .waiting-box{text-align:center;padding:36px 20px;}
+    .waiting-box p{color:var(--ai-soft);font-size:.875rem;line-height:1.8;}
+
+    /* トースト */
+    .toast{position:fixed;bottom:24px;right:24px;z-index:999;max-width:300px;}
+
+    /* 検索バー */
+    .search-bar{display:flex;gap:8px;margin-bottom:16px;}
+    .search-bar input{flex:1;}
+
+    .tab-section{display:none;}
+    .tab-section.active{display:block;animation:tabIn .3s ease both;}
+    @keyframes tabIn{from{opacity:0;transform:translateX(6px);}to{opacity:1;transform:translateX(0);}}
+
+    @media(max-width:768px){
+      .layout{grid-template-columns:1fr;}
+      .sidebar{display:flex;overflow-x:auto;padding:8px 0;}
+      .sidebar-item{white-space:nowrap;border-left:none;border-bottom:2px solid transparent;}
+      .sidebar-item.active{border-bottom-color:var(--ai-mid);}
+      .content{padding:20px 14px;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ログイン -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo-mark">c+a</div>
+      <div class="login-season-bar"></div>
+      <div class="login-title">connec+a</div>
+      <div class="login-sub" data-i18n="adminPanel">Admin Panel</div>
+      <input id="pw-input" class="login-input" type="password" data-i18n-ph="passwordPlaceholder" placeholder="パスワードを入力">
+      <button class="login-btn" onclick="doLogin()" data-i18n="loginBtn">ログイン</button>
+      <div class="login-error" id="login-error"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 管理画面 -->
+<div id="admin-screen" style="display:none;">
+  <div class="season-bar"></div>
+  <header class="header">
+    <div class="header__brand">
+      <div class="header__logo">c+a</div>
+      <span class="header__title">connec+a Admin</span>
+    </div>
+    <div class="header__right">
+      <select class="lang-sel" id="lang-sel" onchange="setLang(this.value)">
+        <option value="ja">日本語</option><option value="en">English</option><option value="zh">中文</option>
+        <option value="ko">한국어</option><option value="es">Español</option><option value="fr">Français</option>
+        <option value="pt">Português</option><option value="id">Indonesia</option><option value="th">ภาษาไทย</option>
+        <option value="vi">Tiếng Việt</option><option value="ar">العربية</option><option value="hi">हिन्दी</option>
+        <option value="de">Deutsch</option><option value="it">Italiano</option><option value="ru">Русский</option>
+      </select>
+      <button class="header__logout" onclick="doLogout()" data-i18n="logout">ログアウト</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section" data-i18n="menu">メニュー</div>
+      <button class="sidebar-item active" onclick="switchTab('dashboard')"    data-i18n="dashboard">ダッシュボード</button>
+      <button class="sidebar-item"        onclick="switchTab('events')"       data-i18n="eventMgmt">イベント管理</button>
+      <button class="sidebar-item"        onclick="switchTab('qrscan')"       data-i18n="qrLookup">QR照会</button>
+      <button class="sidebar-item"        onclick="switchTab('registrations')" data-i18n="registrations">登録一覧</button>
+      <button class="sidebar-item"        onclick="switchTab('participants')"  data-i18n="participants">参加者</button>
+    </aside>
+
+    <main class="content">
+
+      <section id="tab-dashboard" class="tab-section active">
+        <div class="section-title" data-i18n="dashboard">ダッシュボード</div>
+        <div id="dashboard-area"><div class="spinner"></div></div>
+      </section>
+
+      <section id="tab-qrscan" class="tab-section">
+        <div class="section-title" data-i18n="qrLookup">QR照会</div>
+        <p style="color:var(--ai-soft);font-size:.82rem;margin-bottom:20px;" data-i18n="qrLookupDesc">QR受付画面でスキャンすると自動で情報が表示されます</p>
+        <div class="live-badge" id="live-badge" style="display:none;"><span class="live-dot"></span><span data-i18n="liveReceiving">リアルタイム受信中</span></div>
+        <div style="background:var(--shiro-warm);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px;">
+          <p style="font-size:.75rem;color:var(--ai-soft);margin-bottom:8px;" data-i18n="manualLookup">チケットIDを入力して照会</p>
+          <div style="display:flex;gap:8px;">
+            <input id="manual-qr-input" class="form-control" type="text" placeholder="ParticipantID|EventID">
+            <button class="btn btn-ai" onclick="lookupQr(document.getElementById('manual-qr-input').value.trim())" data-i18n="lookup">照会</button>
+          </div>
+        </div>
+        <div class="waiting-box" id="waiting-box"><p data-i18n="waitingForScan">QR受付画面でスキャンをお待ちしています</p></div>
+        <div class="detail-panel" id="detail-panel">
+          <div class="detail-header">
+            <div class="detail-avatar" id="detail-avatar">?</div>
+            <div><div class="detail-name" id="detail-name">—</div><div class="detail-rank" id="detail-rank">—</div></div>
+          </div>
+          <div id="detail-rows"></div>
+          <div class="detail-actions" id="detail-actions"></div>
+          <div id="detail-alert" style="margin-top:12px;"></div>
+        </div>
+      </section>
+
+      <section id="tab-registrations" class="tab-section">
+        <div class="section-title" data-i18n="registrations">登録一覧</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <select id="reg-event-filter" class="form-control" style="max-width:240px;"><option value="" data-i18n="allEvents">全イベント</option></select>
+          <button class="btn btn-ai" onclick="loadRegistrations()" data-i18n="filter">絞り込み</button>
+        </div>
+        <div id="registrations-area"><div class="spinner"></div></div>
+      </section>
+
+      <section id="tab-participants" class="tab-section">
+        <div class="section-title" data-i18n="participants">参加者一覧</div>
+        <div class="search-bar">
+          <input id="search-input" class="form-control" type="text" data-i18n-ph="searchPlaceholder" placeholder="名前・メールで検索">
+          <button class="btn btn-ai" onclick="searchParticipants()" data-i18n="search">検索</button>
+        </div>
+        <div id="participants-area"><div class="spinner"></div></div>
+      </section>
+
+      <section id="tab-events" class="tab-section">
+        <div class="section-title" data-i18n="eventMgmt">イベント管理</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <p style="font-size:.825rem;color:var(--ai-soft);" data-i18n="eventMgmtDesc">イベントの作成・編集・ステータス変更ができます</p>
+          <button class="btn btn-ai" onclick="openCreateModal()" data-i18n="createEvent">新規作成</button>
+        </div>
+        <div id="events-area"><div class="spinner"></div></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- イベント作成・編集モーダル -->
+<div id="event-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:16px;max-width:520px;width:100%;padding:28px;box-shadow:0 20px 60px rgba(26,39,68,.2);animation:tabIn .25s ease both;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="font-family:'Zen Old Mincho',serif;font-size:1.05rem;font-weight:700;color:var(--ai-deep);" id="modal-title">イベント作成</div>
+      <button onclick="closeEventModal()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--ai-soft);line-height:1;">&times;</button>
+    </div>
+    <div id="modal-alert"></div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="eventName">イベント名</label>
+      <input id="f-name" class="form-control" type="text">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label class="form-label" data-i18n="eventDate">開催日時</label>
+        <input id="f-date" class="form-control" type="datetime-local">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="eventCapacity">定員</label>
+        <input id="f-capacity" class="form-control" type="number" min="1" value="50">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="eventVenue">会場</label>
+      <input id="f-location" class="form-control" type="text">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label class="form-label" data-i18n="eventPrice">参加費（円）</label>
+        <input id="f-price" class="form-control" type="number" min="0" value="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="eventPayType">支払い方式</label>
+        <select id="f-paytype" class="form-control">
+          <option value="FREE">無料</option>
+          <option value="PAYPAY">PayPay</option>
+          <option value="CASH">現金</option>
+          <option value="PAYPAY_OR_CASH">PayPay / 現金</option>
+        </select>
+      </div>
+    </div>
+    <div id="modal-status-row" style="display:none;" class="form-group">
+      <label class="form-label" data-i18n="eventStatus2">ステータス</label>
+      <select id="f-status" class="form-control">
+        <option value="OPEN">受付中</option>
+        <option value="CLOSED">終了</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn btn-ai" style="flex:1;" onclick="saveEvent()" id="modal-save-btn" data-i18n="save">保存</button>
+      <button class="btn btn-outline" onclick="closeEventModal()" data-i18n="cancel">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"> id="toast"></div>
+
+<script>
+const GAS_URL ='https://script.google.com/macros/s/AKfycbw94iJOYloTfXOeOONgwyP3MlTXOBolUdSCFO57NyfYDr-0ISYMTLwntsQxinj5c8CsFA/exec';
+const PASSWORD='admin1234'; // ★ ここを変更
+
+const I18N={
+  ja:{adminPanel:'管理画面',passwordPlaceholder:'パスワードを入力',loginBtn:'ログイン',logout:'ログアウト',menu:'メニュー',dashboard:'ダッシュボード',qrLookup:'QR照会',qrLookupDesc:'QR受付画面でスキャンすると自動で情報が表示されます',registrations:'登録一覧',participants:'参加者',liveReceiving:'リアルタイム受信中',manualLookup:'チケットIDを入力して照会',lookup:'照会',waitingForScan:'QR受付画面でスキャンをお待ちしています',wrongPassword:'パスワードが違います',open:'受付中',closed:'終了',checkin:'チェックイン',checkinDone:'チェックイン済み',checkinComplete:'さんのチェックインが完了しました',changePayment:'支払い変更...',alreadyCheckedIn:'入場済みです',allEvents:'全イベント',filter:'絞り込み',search:'検索',searchPlaceholder:'名前・メールで検索',payFree:'無料',payUnpaid:'未払い',payPending:'PayPay確認待ち',payPaid:'PayPay支払済',payCash:'現金',payChange:'変更...',updated:'支払いステータスを更新しました',openEvents:'開催中',totalParticipants:'参加者数',totalRegistrations:'総登録数',totalEvents:'総イベント数',eventStatus:'イベント別状況',name:'名前',date:'日時',capacity:'定員',registered:'登録',checkins:'入場済',paid:'支払済',status:'状態',participantId:'参加者ID',eventId:'イベントID',payment:'支払い',entrance:'入場',regDate:'登録日',rank:'ランク',participations:'参加回数',notFound:'参加者が見つかりません',eventMgmt:'イベント管理',eventMgmtDesc:'イベントの作成・編集・ステータス変更ができます',createEvent:'新規作成',eventName:'イベント名',eventDate:'開催日時',eventCapacity:'定員',eventVenue:'会場',eventPrice:'参加費（円）',eventPayType:'支払い方式',eventStatus2:'ステータス',save:'保存',cancel:'キャンセル',editEvent:'編集',closeEvent:'終了にする',reopenEvent:'再開する',noEvents:'イベントはまだありません',createSuccess:'イベントを作成しました',updateSuccess:'イベントを更新しました'},
+  en:{adminPanel:'Admin Panel',passwordPlaceholder:'Enter password',loginBtn:'Login',logout:'Logout',menu:'Menu',dashboard:'Dashboard',qrLookup:'QR Lookup',qrLookupDesc:'Scan on the QR reception screen and info will appear automatically.',registrations:'Registrations',participants:'Participants',liveReceiving:'Live Receiving',manualLookup:'Enter ticket ID for lookup',lookup:'Lookup',waitingForScan:'Waiting for scan...',wrongPassword:'Wrong password',open:'Open',closed:'Closed',checkin:'Check-in',checkinDone:'Checked In',checkinComplete:"'s check-in is complete",changePayment:'Change payment...',alreadyCheckedIn:'Already checked in',allEvents:'All Events',filter:'Filter',search:'Search',searchPlaceholder:'Search by name or email',payFree:'Free',payUnpaid:'Unpaid',payPending:'PayPay Pending',payPaid:'PayPay Paid',payCash:'Cash',payChange:'Change...',updated:'Payment status updated',openEvents:'Open Events',totalParticipants:'Participants',totalRegistrations:'Total Reg.',totalEvents:'Total Events',eventStatus:'Event Status',name:'Name',date:'Date',capacity:'Capacity',registered:'Registered',checkins:'Checked In',paid:'Paid',status:'Status',participantId:'Participant ID',eventId:'Event ID',payment:'Payment',entrance:'Entrance',regDate:'Reg. Date',rank:'Rank',participations:'Participations',notFound:'No participants found',eventMgmt:'Event Management',eventMgmtDesc:'Create, edit, and manage event status.',createEvent:'Create New',eventName:'Event Name',eventDate:'Date & Time',eventCapacity:'Capacity',eventVenue:'Venue',eventPrice:'Price (JPY)',eventPayType:'Payment Type',eventStatus2:'Status',save:'Save',cancel:'Cancel',editEvent:'Edit',closeEvent:'Close',reopenEvent:'Reopen',noEvents:'No events yet',createSuccess:'Event created',updateSuccess:'Event updated'},
+  zh:{adminPanel:'管理面板',passwordPlaceholder:'输入密码',loginBtn:'登录',logout:'登出',menu:'菜单',dashboard:'仪表板',qrLookup:'QR查询',qrLookupDesc:'在QR接待屏幕扫描后，信息将自动显示。',registrations:'报名列表',participants:'参与者',liveReceiving:'实时接收中',manualLookup:'输入票券ID查询',lookup:'查询',waitingForScan:'等待扫描...',wrongPassword:'密码错误',open:'进行中',closed:'已结束',checkin:'签到',checkinDone:'已签到',checkinComplete:'签到完成',changePayment:'更改付款...',alreadyCheckedIn:'已签到',allEvents:'全部活动',filter:'筛选',search:'搜索',searchPlaceholder:'按姓名或邮箱搜索',payFree:'免费',payUnpaid:'未付款',payPending:'PayPay待确认',payPaid:'PayPay已付',payCash:'现金',payChange:'更改...',updated:'付款状态已更新',openEvents:'进行中',totalParticipants:'参与者数',totalRegistrations:'总报名数',totalEvents:'总活动数',eventStatus:'活动状态',name:'姓名',date:'日期',capacity:'容量',registered:'报名',checkins:'已入场',paid:'已付款',status:'状态',participantId:'参与者ID',eventId:'活动ID',payment:'付款',entrance:'入场',regDate:'报名日期',rank:'等级',participations:'参与次数',notFound:'未找到参与者'},
+  ko:{adminPanel:'관리 패널',passwordPlaceholder:'비밀번호 입력',loginBtn:'로그인',logout:'로그아웃',menu:'메뉴',dashboard:'대시보드',qrLookup:'QR 조회',qrLookupDesc:'QR 수신 화면에서 스캔하면 정보가 자동으로 표시됩니다.',registrations:'등록 목록',participants:'참가자',liveReceiving:'실시간 수신 중',manualLookup:'티켓 ID 입력 후 조회',lookup:'조회',waitingForScan:'스캔을 기다리는 중...',wrongPassword:'비밀번호가 틀렸습니다',open:'모집중',closed:'마감',checkin:'체크인',checkinDone:'체크인 완료',checkinComplete:'의 체크인이 완료되었습니다',changePayment:'결제 변경...',alreadyCheckedIn:'이미 체크인됨',allEvents:'전체 이벤트',filter:'필터',search:'검색',searchPlaceholder:'이름 또는 이메일로 검색',payFree:'무료',payUnpaid:'미납',payPending:'PayPay 대기',payPaid:'PayPay 완료',payCash:'현금',payChange:'변경...',updated:'결제 상태가 업데이트되었습니다',openEvents:'모집중',totalParticipants:'참가자 수',totalRegistrations:'총 등록',totalEvents:'총 이벤트',eventStatus:'이벤트별 현황',name:'이름',date:'날짜',capacity:'정원',registered:'등록',checkins:'입장완료',paid:'지불완료',status:'상태',participantId:'참가자 ID',eventId:'이벤트 ID',payment:'결제',entrance:'입장',regDate:'등록일',rank:'랭크',participations:'참가 횟수',notFound:'참가자를 찾을 수 없습니다'},
+  es:{adminPanel:'Panel Admin',passwordPlaceholder:'Ingrese contraseña',loginBtn:'Iniciar sesión',logout:'Cerrar sesión',menu:'Menú',dashboard:'Panel',qrLookup:'Consulta QR',qrLookupDesc:'Escanee en la pantalla QR y la info aparecerá automáticamente.',registrations:'Registros',participants:'Participantes',liveReceiving:'Recibiendo en vivo',manualLookup:'Ingrese ID para consulta',lookup:'Consultar',waitingForScan:'Esperando escaneo...',wrongPassword:'Contraseña incorrecta',open:'Abierto',closed:'Cerrado',checkin:'Check-in',checkinDone:'Check-in hecho',checkinComplete:'check-in completo',changePayment:'Cambiar pago...',alreadyCheckedIn:'Ya ingresado',allEvents:'Todos',filter:'Filtrar',search:'Buscar',searchPlaceholder:'Buscar por nombre o correo',payFree:'Gratis',payUnpaid:'Sin pagar',payPending:'PayPay Pendiente',payPaid:'PayPay Pagado',payCash:'Efectivo',payChange:'Cambiar...',updated:'Estado actualizado',openEvents:'Abiertos',totalParticipants:'Participantes',totalRegistrations:'Total Reg.',totalEvents:'Total Eventos',eventStatus:'Estado de eventos',name:'Nombre',date:'Fecha',capacity:'Capacidad',registered:'Registrados',checkins:'Entrados',paid:'Pagados',status:'Estado',participantId:'ID Participante',eventId:'ID Evento',payment:'Pago',entrance:'Entrada',regDate:'Fecha Reg.',rank:'Rango',participations:'Participaciones',notFound:'No se encontraron participantes'},
+  fr:{adminPanel:'Panneau Admin',passwordPlaceholder:'Entrez le mot de passe',loginBtn:'Connexion',logout:'Déconnexion',menu:'Menu',dashboard:'Tableau de bord',qrLookup:'Recherche QR',qrLookupDesc:"Scannez sur l'écran QR et les infos s'affichent.",registrations:'Inscriptions',participants:'Participants',liveReceiving:'Réception en direct',manualLookup:'Entrez l\'ID du ticket',lookup:'Rechercher',waitingForScan:'En attente de scan...',wrongPassword:'Mot de passe incorrect',open:'Ouvert',closed:'Fermé',checkin:'Check-in',checkinDone:'Enregistré',checkinComplete:'check-in effectué',changePayment:'Changer paiement...',alreadyCheckedIn:'Déjà entré',allEvents:'Tous',filter:'Filtrer',search:'Rechercher',searchPlaceholder:'Rechercher par nom ou e-mail',payFree:'Gratuit',payUnpaid:'Non payé',payPending:'PayPay en attente',payPaid:'PayPay payé',payCash:'Espèces',payChange:'Changer...',updated:'Statut mis à jour',openEvents:'Ouverts',totalParticipants:'Participants',totalRegistrations:'Total inscriptions',totalEvents:'Total événements',eventStatus:'Statut des événements',name:'Nom',date:'Date',capacity:'Capacité',registered:'Inscrits',checkins:'Entrés',paid:'Payés',status:'Statut',participantId:'ID Participant',eventId:'ID Événement',payment:'Paiement',entrance:'Entrée',regDate:'Date inscription',rank:'Rang',participations:'Participations',notFound:'Aucun participant trouvé'},
+  pt:{adminPanel:'Painel Admin',passwordPlaceholder:'Digite a senha',loginBtn:'Entrar',logout:'Sair',menu:'Menu',dashboard:'Painel',qrLookup:'Consulta QR',qrLookupDesc:'Escaneie na tela QR e as informações aparecem automaticamente.',registrations:'Registros',participants:'Participantes',liveReceiving:'Recebendo ao vivo',manualLookup:'Digite ID para consulta',lookup:'Consultar',waitingForScan:'Aguardando scan...',wrongPassword:'Senha incorreta',open:'Aberto',closed:'Fechado',checkin:'Check-in',checkinDone:'Check-in feito',checkinComplete:'check-in concluído',changePayment:'Alterar pagamento...',alreadyCheckedIn:'Já entrou',allEvents:'Todos',filter:'Filtrar',search:'Buscar',searchPlaceholder:'Buscar por nome ou email',payFree:'Grátis',payUnpaid:'Não pago',payPending:'PayPay Pendente',payPaid:'PayPay Pago',payCash:'Dinheiro',payChange:'Alterar...',updated:'Status atualizado',openEvents:'Abertos',totalParticipants:'Participantes',totalRegistrations:'Total Reg.',totalEvents:'Total Eventos',eventStatus:'Status dos eventos',name:'Nome',date:'Data',capacity:'Capacidade',registered:'Registrados',checkins:'Entrados',paid:'Pagos',status:'Status',participantId:'ID Participante',eventId:'ID Evento',payment:'Pagamento',entrance:'Entrada',regDate:'Data Reg.',rank:'Rank',participations:'Participações',notFound:'Nenhum participante encontrado'},
+  id:{adminPanel:'Panel Admin',passwordPlaceholder:'Masukkan kata sandi',loginBtn:'Masuk',logout:'Keluar',menu:'Menu',dashboard:'Dasbor',qrLookup:'Pencarian QR',qrLookupDesc:'Pindai di layar QR dan informasi akan ditampilkan otomatis.',registrations:'Pendaftaran',participants:'Peserta',liveReceiving:'Menerima Langsung',manualLookup:'Masukkan ID tiket',lookup:'Cari',waitingForScan:'Menunggu scan...',wrongPassword:'Kata sandi salah',open:'Buka',closed:'Tutup',checkin:'Check-in',checkinDone:'Check-in selesai',checkinComplete:'check-in selesai',changePayment:'Ubah pembayaran...',alreadyCheckedIn:'Sudah masuk',allEvents:'Semua',filter:'Filter',search:'Cari',searchPlaceholder:'Cari nama atau email',payFree:'Gratis',payUnpaid:'Belum bayar',payPending:'PayPay Tertunda',payPaid:'PayPay Terbayar',payCash:'Tunai',payChange:'Ubah...',updated:'Status pembayaran diperbarui',openEvents:'Buka',totalParticipants:'Peserta',totalRegistrations:'Total Daftar',totalEvents:'Total Acara',eventStatus:'Status acara',name:'Nama',date:'Tanggal',capacity:'Kapasitas',registered:'Daftar',checkins:'Masuk',paid:'Bayar',status:'Status',participantId:'ID Peserta',eventId:'ID Acara',payment:'Pembayaran',entrance:'Masuk',regDate:'Tgl Daftar',rank:'Peringkat',participations:'Partisipasi',notFound:'Peserta tidak ditemukan'},
+  th:{adminPanel:'แผงผู้ดูแล',passwordPlaceholder:'ป้อนรหัสผ่าน',loginBtn:'เข้าสู่ระบบ',logout:'ออกจากระบบ',menu:'เมนู',dashboard:'แดชบอร์ด',qrLookup:'ค้นหา QR',qrLookupDesc:'สแกนบนหน้าจอ QR แล้วข้อมูลจะแสดงอัตโนมัติ',registrations:'การลงทะเบียน',participants:'ผู้เข้าร่วม',liveReceiving:'รับสัญญาณสด',manualLookup:'ป้อน ID ตั๋ว',lookup:'ค้นหา',waitingForScan:'รอการสแกน...',wrongPassword:'รหัสผ่านไม่ถูกต้อง',open:'เปิด',closed:'ปิด',checkin:'เช็คอิน',checkinDone:'เช็คอินแล้ว',checkinComplete:'เช็คอินเสร็จสิ้น',changePayment:'เปลี่ยนการชำระ...',alreadyCheckedIn:'เช็คอินแล้ว',allEvents:'ทั้งหมด',filter:'กรอง',search:'ค้นหา',searchPlaceholder:'ค้นหาด้วยชื่อหรืออีเมล',payFree:'ฟรี',payUnpaid:'ยังไม่จ่าย',payPending:'PayPay รอ',payPaid:'PayPay จ่ายแล้ว',payCash:'เงินสด',payChange:'เปลี่ยน...',updated:'อัปเดตสถานะแล้ว',openEvents:'เปิด',totalParticipants:'ผู้เข้าร่วม',totalRegistrations:'ลงทะเบียนทั้งหมด',totalEvents:'กิจกรรมทั้งหมด',eventStatus:'สถานะกิจกรรม',name:'ชื่อ',date:'วันที่',capacity:'ความจุ',registered:'ลงทะเบียน',checkins:'เข้าแล้ว',paid:'จ่ายแล้ว',status:'สถานะ',participantId:'ID ผู้เข้าร่วม',eventId:'ID กิจกรรม',payment:'การชำระ',entrance:'เข้า',regDate:'วันที่ลง',rank:'อันดับ',participations:'จำนวนครั้ง',notFound:'ไม่พบผู้เข้าร่วม'},
+  vi:{adminPanel:'Bảng Quản Trị',passwordPlaceholder:'Nhập mật khẩu',loginBtn:'Đăng nhập',logout:'Đăng xuất',menu:'Menu',dashboard:'Bảng điều khiển',qrLookup:'Tra cứu QR',qrLookupDesc:'Quét trên màn hình QR và thông tin sẽ tự động hiển thị.',registrations:'Đăng ký',participants:'Người tham gia',liveReceiving:'Đang nhận trực tiếp',manualLookup:'Nhập ID vé để tra cứu',lookup:'Tra cứu',waitingForScan:'Đang chờ quét...',wrongPassword:'Sai mật khẩu',open:'Mở',closed:'Đóng',checkin:'Check-in',checkinDone:'Đã check-in',checkinComplete:'đã check-in xong',changePayment:'Thay đổi thanh toán...',alreadyCheckedIn:'Đã vào',allEvents:'Tất cả',filter:'Lọc',search:'Tìm kiếm',searchPlaceholder:'Tìm theo tên hoặc email',payFree:'Miễn phí',payUnpaid:'Chưa thanh toán',payPending:'PayPay đang xử lý',payPaid:'PayPay đã thanh toán',payCash:'Tiền mặt',payChange:'Thay đổi...',updated:'Đã cập nhật trạng thái',openEvents:'Đang mở',totalParticipants:'Người tham gia',totalRegistrations:'Tổng đăng ký',totalEvents:'Tổng sự kiện',eventStatus:'Trạng thái sự kiện',name:'Tên',date:'Ngày',capacity:'Sức chứa',registered:'Đăng ký',checkins:'Đã vào',paid:'Đã thanh toán',status:'Trạng thái',participantId:'ID Người dùng',eventId:'ID Sự kiện',payment:'Thanh toán',entrance:'Vào',regDate:'Ngày đăng ký',rank:'Hạng',participations:'Lần tham gia',notFound:'Không tìm thấy'},
+  ar:{adminPanel:'لوحة الإدارة',passwordPlaceholder:'أدخل كلمة المرور',loginBtn:'تسجيل الدخول',logout:'تسجيل الخروج',menu:'القائمة',dashboard:'لوحة التحكم',qrLookup:'بحث QR',qrLookupDesc:'امسح على شاشة QR وستظهر المعلومات تلقائيًا.',registrations:'التسجيلات',participants:'المشاركون',liveReceiving:'استقبال مباشر',manualLookup:'أدخل معرف التذكرة للبحث',lookup:'بحث',waitingForScan:'في انتظار المسح...',wrongPassword:'كلمة المرور خاطئة',open:'مفتوح',closed:'مغلق',checkin:'تسجيل الدخول',checkinDone:'تم التسجيل',checkinComplete:'تم التسجيل بنجاح',changePayment:'تغيير الدفع...',alreadyCheckedIn:'دخل بالفعل',allEvents:'الكل',filter:'تصفية',search:'بحث',searchPlaceholder:'البحث بالاسم أو البريد',payFree:'مجاني',payUnpaid:'غير مدفوع',payPending:'PayPay قيد الانتظار',payPaid:'PayPay مدفوع',payCash:'نقداً',payChange:'تغيير...',updated:'تم تحديث الحالة',openEvents:'مفتوح',totalParticipants:'المشاركون',totalRegistrations:'إجمالي التسجيلات',totalEvents:'إجمالي الفعاليات',eventStatus:'حالة الفعاليات',name:'الاسم',date:'التاريخ',capacity:'السعة',registered:'مسجل',checkins:'دخلوا',paid:'دفعوا',status:'الحالة',participantId:'معرف المشارك',eventId:'معرف الفعالية',payment:'الدفع',entrance:'الدخول',regDate:'تاريخ التسجيل',rank:'المستوى',participations:'مرات المشاركة',notFound:'لم يتم العثور على مشاركين'},
+  hi:{adminPanel:'एडमिन पैनल',passwordPlaceholder:'पासवर्ड दर्ज करें',loginBtn:'लॉगिन',logout:'लॉगआउट',menu:'मेनू',dashboard:'डैशबोर्ड',qrLookup:'QR खोज',qrLookupDesc:'QR स्क्रीन पर स्कैन करें और जानकारी स्वचालित रूप से दिखेगी।',registrations:'रजिस्ट्रेशन',participants:'प्रतिभागी',liveReceiving:'लाइव प्राप्त हो रहा है',manualLookup:'टिकट ID दर्ज करें',lookup:'खोजें',waitingForScan:'स्कैन का इंतजार...',wrongPassword:'गलत पासवर्ड',open:'खुला',closed:'बंद',checkin:'चेक-इन',checkinDone:'चेक-इन हो गया',checkinComplete:'का चेक-इन पूर्ण',changePayment:'भुगतान बदलें...',alreadyCheckedIn:'पहले से प्रवेश',allEvents:'सभी',filter:'फ़िल्टर',search:'खोज',searchPlaceholder:'नाम या ईमेल से खोजें',payFree:'मुफ़्त',payUnpaid:'अदत्त',payPending:'PayPay लंबित',payPaid:'PayPay भुगतान',payCash:'नकद',payChange:'बदलें...',updated:'स्थिति अपडेट',openEvents:'खुला',totalParticipants:'प्रतिभागी',totalRegistrations:'कुल रजिस्ट्रेशन',totalEvents:'कुल कार्यक्रम',eventStatus:'कार्यक्रम स्थिति',name:'नाम',date:'तारीख',capacity:'क्षमता',registered:'रजिस्टर्ड',checkins:'प्रवेश',paid:'भुगतान',status:'स्थिति',participantId:'प्रतिभागी ID',eventId:'कार्यक्रम ID',payment:'भुगतान',entrance:'प्रवेश',regDate:'रजिस्ट्रेशन तारीख',rank:'रैंक',participations:'भागीदारी',notFound:'प्रतिभागी नहीं मिले'},
+  de:{adminPanel:'Admin-Panel',passwordPlaceholder:'Passwort eingeben',loginBtn:'Anmelden',logout:'Abmelden',menu:'Menü',dashboard:'Dashboard',qrLookup:'QR-Suche',qrLookupDesc:'Scannen Sie auf dem QR-Bildschirm und Infos erscheinen automatisch.',registrations:'Registrierungen',participants:'Teilnehmer',liveReceiving:'Live-Empfang',manualLookup:'Ticket-ID eingeben',lookup:'Suchen',waitingForScan:'Warten auf Scan...',wrongPassword:'Falsches Passwort',open:'Offen',closed:'Geschlossen',checkin:'Check-in',checkinDone:'Eingecheckt',checkinComplete:'Check-in abgeschlossen',changePayment:'Zahlung ändern...',alreadyCheckedIn:'Bereits eingecheckt',allEvents:'Alle',filter:'Filtern',search:'Suchen',searchPlaceholder:'Nach Name oder E-Mail suchen',payFree:'Kostenlos',payUnpaid:'Unbezahlt',payPending:'PayPay ausstehend',payPaid:'PayPay bezahlt',payCash:'Bar',payChange:'Ändern...',updated:'Status aktualisiert',openEvents:'Offen',totalParticipants:'Teilnehmer',totalRegistrations:'Gesamt Reg.',totalEvents:'Gesamt Events',eventStatus:'Eventstatus',name:'Name',date:'Datum',capacity:'Kapazität',registered:'Registriert',checkins:'Eingecheckt',paid:'Bezahlt',status:'Status',participantId:'Teilnehmer-ID',eventId:'Event-ID',payment:'Zahlung',entrance:'Eingang',regDate:'Reg. Datum',rank:'Rang',participations:'Teilnahmen',notFound:'Keine Teilnehmer gefunden'},
+  it:{adminPanel:'Pannello Admin',passwordPlaceholder:'Inserisci password',loginBtn:'Accedi',logout:'Esci',menu:'Menu',dashboard:'Dashboard',qrLookup:'Ricerca QR',qrLookupDesc:"Scansiona sulla schermata QR e le info appariranno automaticamente.",registrations:'Registrazioni',participants:'Partecipanti',liveReceiving:'Ricezione in diretta',manualLookup:'Inserisci ID ticket',lookup:'Cerca',waitingForScan:'In attesa di scansione...',wrongPassword:'Password errata',open:'Aperto',closed:'Chiuso',checkin:'Check-in',checkinDone:'Effettuato',checkinComplete:'check-in completato',changePayment:'Modifica pagamento...',alreadyCheckedIn:'Già entrato',allEvents:'Tutti',filter:'Filtra',search:'Cerca',searchPlaceholder:'Cerca per nome o email',payFree:'Gratuito',payUnpaid:'Non pagato',payPending:'PayPay in attesa',payPaid:'PayPay pagato',payCash:'Contanti',payChange:'Modifica...',updated:'Stato aggiornato',openEvents:'Aperti',totalParticipants:'Partecipanti',totalRegistrations:'Tot. Registrazioni',totalEvents:'Tot. Eventi',eventStatus:'Stato eventi',name:'Nome',date:'Data',capacity:'Capacità',registered:'Registrati',checkins:'Entrati',paid:'Pagati',status:'Stato',participantId:'ID Partecipante',eventId:'ID Evento',payment:'Pagamento',entrance:'Ingresso',regDate:'Data Reg.',rank:'Grado',participations:'Partecipazioni',notFound:'Nessun partecipante trovato'},
+  ru:{adminPanel:'Панель администратора',passwordPlaceholder:'Введите пароль',loginBtn:'Войти',logout:'Выйти',menu:'Меню',dashboard:'Панель управления',qrLookup:'Поиск QR',qrLookupDesc:'Сканируйте на экране QR и информация отобразится автоматически.',registrations:'Регистрации',participants:'Участники',liveReceiving:'Получение в реальном времени',manualLookup:'Введите ID билета',lookup:'Поиск',waitingForScan:'Ожидание сканирования...',wrongPassword:'Неверный пароль',open:'Открыто',closed:'Закрыто',checkin:'Чек-ин',checkinDone:'Зарегистрирован',checkinComplete:'чек-ин выполнен',changePayment:'Изменить оплату...',alreadyCheckedIn:'Уже вошёл',allEvents:'Все',filter:'Фильтр',search:'Поиск',searchPlaceholder:'Поиск по имени или email',payFree:'Бесплатно',payUnpaid:'Не оплачено',payPending:'PayPay ожидает',payPaid:'PayPay оплачено',payCash:'Наличные',payChange:'Изменить...',updated:'Статус обновлён',openEvents:'Открытые',totalParticipants:'Участники',totalRegistrations:'Всего рег.',totalEvents:'Всего событий',eventStatus:'Статус событий',name:'Имя',date:'Дата',capacity:'Вместимость',registered:'Зарег.',checkins:'Вошли',paid:'Оплатили',status:'Статус',participantId:'ID Участника',eventId:'ID События',payment:'Оплата',entrance:'Вход',regDate:'Дата рег.',rank:'Ранг',participations:'Участий',notFound:'Участники не найдены'},
+};
+
+let lang=localStorage.getItem('lang')||'ja';
+function t(k){return(I18N[lang]||I18N.ja)[k]||(I18N.ja)[k]||k;}
+function setLang(l){lang=l;localStorage.setItem('lang',l);const s=document.getElementById('lang-sel');if(s)s.value=l;applyI18n();}
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{el.placeholder=t(el.dataset.i18nPh);});
+}
+
+async function api(action,params){
+  params=params||{};
+  const res=await fetch(GAS_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify(Object.assign({action},params))});
+  const json=await res.json();if(!json.success)throw new Error(json.error||'Error');return json.data;
+}
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function doLogin(){
+  if(document.getElementById('pw-input').value===PASSWORD){
+    sessionStorage.setItem('admin_auth','1');
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('admin-screen').style.display='block';
+    document.getElementById('lang-sel').value=lang;
+    loadDashboard();
+  }else{document.getElementById('login-error').textContent=t('wrongPassword');}
+}
+function doLogout(){sessionStorage.removeItem('admin_auth');location.reload();}
+document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+if(sessionStorage.getItem('admin_auth')==='1'){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('admin-screen').style.display='block';
+  document.getElementById('lang-sel').value=lang;
+  loadDashboard();
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-section').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.sidebar-item').forEach(el=>{if(el.getAttribute('onclick')==="switchTab('"+tab+"')")el.classList.add('active');});
+  const loaders={dashboard:loadDashboard,events:loadEvents,qrscan:startPolling,registrations:()=>{loadEventFilterOptions();loadRegistrations();},participants:()=>searchParticipants('')};
+  if(loaders[tab])loaders[tab]();
+  if(tab!=='qrscan')stopPolling();
+}
+
+function toastFn(type,msg){
+  const el=document.getElementById('toast');
+  el.innerHTML='<div class="alert alert-'+type+'">'+msg+'</div>';
+  setTimeout(()=>{el.innerHTML='';},3000);
+}
+
+function payBadge(s){
+  const m={FREE:'badge-free',UNPAID:'badge-unpaid',PAYPAY_PENDING:'badge-paypay_pending',PAYPAY_PAID:'badge-paypay_paid',CASH:'badge-cash'};
+  const lk={FREE:'payFree',UNPAID:'payUnpaid',PAYPAY_PENDING:'payPending',PAYPAY_PAID:'payPaid',CASH:'payCash'};
+  return'<span class="badge '+(m[s]||'')+'">'+esc(t(lk[s])||s)+'</span>';
+}
+function checkinBadge(s){
+  return s==='TRUE'
+    ?'<span class="badge badge-checked">'+t('checkinDone')+'</span>'
+    :'<span class="badge badge-not-checked">—</span>';
+}
+const RANK_LABEL={New:'New',Bronze:'Bronze',Silver:'Silver',Gold:'Gold',Platinum:'Platinum'};
+
+async function loadDashboard(){
+  const area=document.getElementById('dashboard-area');area.innerHTML='<div class="spinner"></div>';
+  try{
+    const stats=await api('getStats');
+    let html=
+      '<div class="stat-grid">'+
+      '<div class="stat-card"><div class="stat-num">'+stats.openEvents+'</div><div class="stat-label">'+t('openEvents')+'</div></div>'+
+      '<div class="stat-card"><div class="stat-num">'+stats.totalParticipants+'</div><div class="stat-label">'+t('totalParticipants')+'</div></div>'+
+      '<div class="stat-card"><div class="stat-num">'+stats.totalRegistrations+'</div><div class="stat-label">'+t('totalRegistrations')+'</div></div>'+
+      '<div class="stat-card"><div class="stat-num">'+stats.totalEvents+'</div><div class="stat-label">'+t('totalEvents')+'</div></div>'+
+      '</div><div style="font-size:.72rem;color:var(--ai-soft);letter-spacing:.14em;margin-bottom:12px;">— '+t('eventStatus')+' —</div>'+
+      '<div class="table-wrap"><table><thead><tr>'+
+      '<th>'+t('name')+'</th><th>'+t('date')+'</th><th>'+t('capacity')+'</th>'+
+      '<th>'+t('registered')+'</th><th>'+t('checkins')+'</th><th>'+t('paid')+'</th><th>'+t('status')+'</th>'+
+      '</tr></thead><tbody>';
+    (stats.eventStats||[]).forEach(ev=>{
+      html+='<tr><td><strong>'+esc(ev.EventName)+'</strong></td><td style="font-size:.78rem;">'+esc(ev.Date)+'</td>'+
+        '<td>'+esc(ev.Capacity)+'</td><td>'+esc(ev.registrationCount)+'</td><td>'+esc(ev.checkinCount)+'</td><td>'+esc(ev.paidCount)+'</td>'+
+        '<td>'+(ev.Status==='OPEN'?'<span class="badge badge-open">'+t('open')+'</span>':'<span class="badge badge-closed">'+t('closed')+'</span>')+'</td></tr>';
+    });
+    html+='</tbody></table></div>';area.innerHTML=html;
+  }catch(err){area.innerHTML='<div class="alert alert-danger">'+esc(err.message)+'</div>';}
+}
+
+let pollingTimer=null,lastScannedQr=null;
+function startPolling(){stopPolling();document.getElementById('live-badge').style.display='inline-flex';pollingTimer=setInterval(pollLastScan,2000);pollLastScan();}
+function stopPolling(){if(pollingTimer){clearInterval(pollingTimer);pollingTimer=null;}document.getElementById('live-badge').style.display='none';}
+async function pollLastScan(){
+  try{
+    const data=await api('getLastScan');if(!data||!data.qr)return;
+    const now=Date.now();if(data.qr===lastScannedQr&&now-data.time<10000)return;
+    lastScannedQr=data.qr;await lookupQr(data.qr);
+  }catch(e){}
+}
+
+async function lookupQr(qrData){
+  if(!qrData)return;
+  document.getElementById('waiting-box').style.display='none';
+  document.getElementById('detail-panel').classList.remove('show');
+  try{const data=await api('getRegistrationDetail',{qrData});showDetail(data);}
+  catch(err){document.getElementById('waiting-box').style.display='block';document.getElementById('waiting-box').innerHTML='<p>'+esc(err.message)+'</p>';}
+}
+
+function showDetail(data){
+  const{registration:reg,participant,event:ev,qrData}=data;
+  const panel=document.getElementById('detail-panel');panel.classList.add('show');
+  const name=participant?participant.Name:'—';const rank=participant?participant.Rank:'—';
+  document.getElementById('detail-avatar').textContent=name.charAt(0);
+  document.getElementById('detail-name').textContent=name;
+  document.getElementById('detail-rank').textContent=esc(rank)+' '+t('rank');
+  document.getElementById('detail-rows').innerHTML=
+    '<div class="detail-row"><span class="detail-key">'+t('name')+'</span><span class="detail-val">'+esc(participant?participant.Email:'—')+'</span></div>'+
+    '<div class="detail-row"><span class="detail-key">'+t('name')+'</span><span class="detail-val">'+esc(ev?ev.EventName:reg.EventID)+'</span></div>'+
+    '<div class="detail-row"><span class="detail-key">'+t('payment')+'</span><span class="detail-val" id="dp">'+payBadge(reg.PaymentStatus)+'</span></div>'+
+    '<div class="detail-row"><span class="detail-key">'+t('entrance')+'</span><span class="detail-val" id="dc">'+checkinBadge(reg.CheckinStatus)+'</span></div>'+
+    '<div class="detail-row"><span class="detail-key">'+t('participations')+'</span><span class="detail-val">'+esc(participant?participant.TotalEvents:'—')+'</span></div>';
+  const actEl=document.getElementById('detail-actions');actEl.innerHTML='';
+  if(reg.CheckinStatus!=='TRUE'){
+    const btn=document.createElement('button');btn.className='btn btn-matcha';btn.textContent=t('checkin');
+    btn.addEventListener('click',async()=>{
+      btn.disabled=true;btn.textContent='...';
+      try{
+        const r=await api('checkin',{qrData});
+        document.getElementById('dc').innerHTML=checkinBadge('TRUE');
+        document.getElementById('detail-alert').innerHTML='<div class="alert alert-success">'+esc(r.name)+' '+t('checkinComplete')+'</div>';
+        btn.textContent=t('checkinDone');toastFn('success',r.name+' '+t('checkinComplete'));
+      }catch(err){btn.disabled=false;btn.textContent=t('checkin');document.getElementById('detail-alert').innerHTML='<div class="alert alert-danger">'+esc(err.message)+'</div>';}
+    });actEl.appendChild(btn);
+  }else{
+    const s=document.createElement('span');s.style='color:var(--matcha);font-weight:700;align-self:center;font-size:.875rem;';s.textContent=t('alreadyCheckedIn');actEl.appendChild(s);
+  }
+  const sel=document.createElement('select');sel.className='form-control';sel.style='max-width:200px;';
+  sel.innerHTML='<option value="">'+t('changePayment')+'</option>'+
+    '<option value="FREE">'+t('payFree')+'</option><option value="UNPAID">'+t('payUnpaid')+'</option>'+
+    '<option value="PAYPAY_PENDING">'+t('payPending')+'</option><option value="PAYPAY_PAID">'+t('payPaid')+'</option>'+
+    '<option value="CASH">'+t('payCash')+'</option>';
+  sel.addEventListener('change',async()=>{
+    if(!sel.value)return;
+    try{await api('updatePaymentStatus',{registrationId:reg.RegistrationID,status:sel.value});document.getElementById('dp').innerHTML=payBadge(sel.value);toastFn('success',t('updated'));sel.value='';}
+    catch(err){toastFn('danger',err.message);}
+  });actEl.appendChild(sel);
+  document.getElementById('detail-alert').innerHTML='';
+}
+
+async function loadEventFilterOptions(){
+  try{
+    const events=await api('getEvents');
+    const sel=document.getElementById('reg-event-filter');
+    sel.innerHTML='<option value="">'+t('allEvents')+'</option>';
+    events.forEach(ev=>{const o=document.createElement('option');o.value=ev.EventID;o.textContent=ev.EventName;sel.appendChild(o);});
+  }catch(e){}
+}
+async function loadRegistrations(){
+  const area=document.getElementById('registrations-area');const eventId=document.getElementById('reg-event-filter').value;area.innerHTML='<div class="spinner"></div>';
+  try{
+    const regs=await api('getAllRegistrations',{eventId:eventId||undefined});
+    if(!regs||!regs.length){area.innerHTML='<div class="alert alert-info">—</div>';return;}
+    let html='<div class="table-wrap"><table><thead><tr>'+
+      '<th>'+t('participantId')+'</th><th>'+t('eventId')+'</th><th>'+t('payment')+'</th>'+
+      '<th>'+t('entrance')+'</th><th>'+t('regDate')+'</th><th>'+t('payChange')+'</th>'+
+      '</tr></thead><tbody>';
+    regs.forEach(r=>{
+      html+='<tr><td style="font-size:.7rem;font-family:monospace;color:var(--ai-soft);">'+esc(r.ParticipantID)+'</td>'+
+        '<td style="font-size:.7rem;color:var(--ai-soft);">'+esc(r.EventID)+'</td>'+
+        '<td>'+payBadge(r.PaymentStatus)+'</td><td>'+checkinBadge(r.CheckinStatus)+'</td>'+
+        '<td style="font-size:.75rem;">'+esc(r.Created?String(r.Created).slice(0,10):'')+'</td>'+
+        '<td><select class="status-sel" onchange="updatePayment(\''+esc(r.RegistrationID)+'\',this.value)">'+
+        '<option value="">'+t('payChange')+'</option>'+
+        '<option value="FREE">'+t('payFree')+'</option><option value="UNPAID">'+t('payUnpaid')+'</option>'+
+        '<option value="PAYPAY_PENDING">'+t('payPending')+'</option><option value="PAYPAY_PAID">'+t('payPaid')+'</option>'+
+        '<option value="CASH">'+t('payCash')+'</option></select></td></tr>';
+    });
+    html+='</tbody></table></div>';area.innerHTML=html;
+  }catch(err){area.innerHTML='<div class="alert alert-danger">'+esc(err.message)+'</div>';}
+}
+async function updatePayment(registrationId,status){
+  if(!status)return;
+  try{await api('updatePaymentStatus',{registrationId,status});toastFn('success',t('updated'));loadRegistrations();}
+  catch(err){toastFn('danger',err.message);}
+}
+
+async function searchParticipants(query){
+  const area=document.getElementById('participants-area');
+  const q=query!==undefined?query:(document.getElementById('search-input').value||'');
+  area.innerHTML='<div class="spinner"></div>';
+  try{
+    const list=await api('getParticipants',{query:q});
+    if(!list||!list.length){area.innerHTML='<div class="alert alert-info">'+t('notFound')+'</div>';return;}
+    let html='<div class="table-wrap"><table><thead><tr>'+
+      '<th>'+t('name')+'</th><th>Email</th><th>'+t('rank')+'</th>'+
+      '<th>'+t('participations')+'</th><th>'+t('regDate')+'</th>'+
+      '</tr></thead><tbody>';
+    list.forEach(p=>{
+      html+='<tr><td><strong>'+esc(p.Name)+'</strong></td><td style="font-size:.8rem;">'+esc(p.Email)+'</td>'+
+        '<td>'+esc(p.Rank)+'</td><td>'+esc(p.TotalEvents||0)+'</td>'+
+        '<td style="font-size:.75rem;">'+esc(p.Created?String(p.Created).slice(0,10):'')+'</td></tr>';
+    });
+    html+='</tbody></table></div>';area.innerHTML=html;
+  }catch(err){area.innerHTML='<div class="alert alert-danger">'+esc(err.message)+'</div>';}
+}
+
+document.getElementById('search-input').addEventListener('keydown',e=>{if(e.key==='Enter')searchParticipants();});
+document.getElementById('manual-qr-input').addEventListener('keydown',e=>{if(e.key==='Enter')lookupQr(document.getElementById('manual-qr-input').value.trim());});
+
+applyI18n();
+
+// ============================================================
+// イベント管理
+// ============================================================
+let editingEventId = null;
+
+async function loadEvents() {
+  const area = document.getElementById('events-area');
+  area.innerHTML = '<div class="spinner"></div>';
+  try {
+    const stats = await api('getStats');
+    const events = stats.eventStats || [];
+    if (!events.length) { area.innerHTML = '<div class="alert alert-info">' + t('noEvents') + '</div>'; return; }
+
+    const seasonColors = ['var(--haru)', 'var(--natsu)', 'var(--aki)', 'var(--fuyu)'];
+    let html = '<div style="display:grid;gap:14px;">';
+    events.forEach(function(ev, i) {
+      const si = i % 4;
+      html +=
+        '<div style="background:#fff;border-radius:12px;border:1px solid var(--border);border-left:4px solid ' + seasonColors[si] + ';padding:18px 20px;box-shadow:var(--shadow-sm);">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">' +
+            '<div style="flex:1;min-width:200px;">' +
+              '<div style="font-family:Zen Old Mincho,serif;font-size:1rem;font-weight:700;color:var(--ai-deep);margin-bottom:6px;">' + esc(ev.EventName) + '</div>' +
+              '<div style="font-size:.78rem;color:var(--ai-soft);line-height:1.9;">' +
+                esc(ev.Date) + '&emsp;' + esc(ev.Location) + '<br>' +
+                (Number(ev.Price) === 0 ? t('payFree') : '&yen;' + Number(ev.Price).toLocaleString()) +
+                '&emsp;' + t('registered') + ': ' + esc(ev.registrationCount) + ' / ' + esc(ev.Capacity) +
+              '</div>' +
+            '</div>' +
+            '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">' +
+              (ev.Status === 'OPEN'
+                ? '<span class="badge badge-open">' + t('open') + '</span>'
+                : '<span class="badge badge-closed">' + t('closed') + '</span>') +
+              '<button class="btn btn-outline btn-sm" onclick='openEditModal(' + JSON.stringify(ev) + ')'>' + t('editEvent') + '</button>' +
+              (ev.Status === 'OPEN'
+                ? '<button class="btn btn-sm" style="background:rgba(212,81,26,.1);color:var(--aki);border:none;" onclick="toggleEventStatus('' + esc(ev.EventID) + '','CLOSED')">' + t('closeEvent') + '</button>'
+                : '<button class="btn btn-sm" style="background:rgba(78,114,82,.1);color:var(--matcha);border:none;" onclick="toggleEventStatus('' + esc(ev.EventID) + '','OPEN')">' + t('reopenEvent') + '</button>'
+              ) +
+            '</div>' +
+          '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    area.innerHTML = html;
+  } catch(err) { area.innerHTML = '<div class="alert alert-danger">' + esc(err.message) + '</div>'; }
+}
+
+function openCreateModal() {
+  editingEventId = null;
+  document.getElementById('modal-title').textContent = t('createEvent');
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-date').value = '';
+  document.getElementById('f-location').value = '';
+  document.getElementById('f-price').value = '0';
+  document.getElementById('f-capacity').value = '50';
+  document.getElementById('f-paytype').value = 'FREE';
+  document.getElementById('modal-status-row').style.display = 'none';
+  document.getElementById('modal-alert').innerHTML = '';
+  const modal = document.getElementById('event-modal');
+  modal.style.display = 'flex';
+}
+
+function openEditModal(ev) {
+  editingEventId = ev.EventID;
+  document.getElementById('modal-title').textContent = t('editEvent');
+  document.getElementById('f-name').value = ev.EventName || '';
+  document.getElementById('f-date').value = (ev.Date || '').replace(' ', 'T');
+  document.getElementById('f-location').value = ev.Location || '';
+  document.getElementById('f-price').value = ev.Price || 0;
+  document.getElementById('f-capacity').value = ev.Capacity || 50;
+  document.getElementById('f-paytype').value = ev.PaymentType || 'FREE';
+  document.getElementById('f-status').value = ev.Status || 'OPEN';
+  document.getElementById('modal-status-row').style.display = 'block';
+  document.getElementById('modal-alert').innerHTML = '';
+  const modal = document.getElementById('event-modal');
+  modal.style.display = 'flex';
+}
+
+function closeEventModal() {
+  document.getElementById('event-modal').style.display = 'none';
+}
+
+document.getElementById('event-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeEventModal();
+});
+
+async function saveEvent() {
+  const nameEl = document.getElementById('f-name');
+  const dateEl = document.getElementById('f-date');
+  const locationEl = document.getElementById('f-location');
+  const alertEl = document.getElementById('modal-alert');
+  alertEl.innerHTML = '';
+
+  if (!nameEl.value.trim() || !dateEl.value || !locationEl.value.trim()) {
+    alertEl.innerHTML = '<div class="alert alert-danger">イベント名・日時・会場は必須です。</div>';
+    return;
+  }
+
+  const btn = document.getElementById('modal-save-btn');
+  btn.disabled = true; btn.textContent = '...';
+
+  try {
+    if (editingEventId) {
+      await api('updateEvent', { event: {
+        EventID: editingEventId,
+        EventName: nameEl.value.trim(),
+        Date: dateEl.value.replace('T', ' '),
+        Location: locationEl.value.trim(),
+        Price: Number(document.getElementById('f-price').value) || 0,
+        PaymentType: document.getElementById('f-paytype').value,
+        Capacity: Number(document.getElementById('f-capacity').value) || 50,
+        Status: document.getElementById('f-status').value,
+      }});
+      toastFn('success', t('updateSuccess'));
+    } else {
+      await api('createEvent', { event: {
+        eventName: nameEl.value.trim(),
+        date: dateEl.value.replace('T', ' '),
+        location: locationEl.value.trim(),
+        price: Number(document.getElementById('f-price').value) || 0,
+        paymentType: document.getElementById('f-paytype').value,
+        capacity: Number(document.getElementById('f-capacity').value) || 50,
+      }});
+      toastFn('success', t('createSuccess'));
+    }
+    closeEventModal();
+    loadEvents();
+    loadDashboard();
+  } catch(err) {
+    alertEl.innerHTML = '<div class="alert alert-danger">' + esc(err.message) + '</div>';
+  }
+  btn.disabled = false; btn.textContent = t('save');
+}
+
+async function toggleEventStatus(eventId, status) {
+  try {
+    await api('updateEvent', { event: { EventID: eventId, Status: status } });
+    toastFn('success', status === 'CLOSED' ? t('closeEvent') : t('reopenEvent'));
+    loadEvents();
+    loadDashboard();
+  } catch(err) { toastFn('danger', err.message); }
+}
+</script>
+</body>
+</html>
